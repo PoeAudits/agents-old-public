@@ -10,7 +10,7 @@ permission:
   context7_search: "deny"
   context7_fetch: "deny"
   gh_grep: "deny"
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 ---
 
 You are an expert documentation discovery specialist focused on finding

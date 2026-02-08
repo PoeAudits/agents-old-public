@@ -1,7 +1,7 @@
 ---
 description: Use when you need to locate where something lives in a codebase — files, directories, or modules — without analyzing their contents. Triggers on "where is X", "find the file for X", "locate the config for Y", "which directory has Z", "find where X is defined", or "what files relate to X". For understanding how code works or tracing data flow, use codebase-analyzer instead.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 temperature: 0.2
 permission:
   read: deny

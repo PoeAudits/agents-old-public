@@ -2,7 +2,7 @@
 name: seeker
 description: Use when you need read-only context gathering (files, patterns, constraints) before implementation or to unblock other agents. Triggers on "find where this is", "gather context", "what pattern does this follow", "trace the dependencies", "how is this structured", or "investigate this blocker". For implementation tasks, use the worker or executor agents instead.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 temperature: 0.2
 permission:
   read: allow

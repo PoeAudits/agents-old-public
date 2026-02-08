@@ -1,7 +1,7 @@
 ---
 description: Use when a task is complex or ambiguous and needs an execution-focused subagent to implement across multiple files or make design decisions. Triggers on "implement this phase" or "make the change".
 mode: subagent
-model: anthropic/claude-opus-4-5
+model: openai/gpt-5.2-codex
 temperature: 0.1
 permission:
   read: "allow"

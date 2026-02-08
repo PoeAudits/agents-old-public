@@ -1,7 +1,7 @@
 ---
 description: Use when you need a read-only review of changes against requirements and coding guidelines. Triggers on "review this", "check my changes", "code review", "look over my changes", "check this implementation", "verify my code", or "review for quality".
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 temperature: 0.3
 permission:
   read: allow

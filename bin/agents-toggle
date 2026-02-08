@@ -44,14 +44,20 @@ PROFILES: Tuple[Profile, ...] = (
         complex="anthropic/claude-opus-4-5",
     ),
     Profile(
+        name="openai",
+        simple="openai/gpt-5.1-codex-mini",
+        medium="openai/gpt-5.1-codex",
+        complex="openai/gpt-5.2-codex",
+    ),
+    Profile(
         name="firmware",
         simple="firmware/claude-haiku-4-5",
         medium="firmware/claude-sonnet-4-5",
-        complex="firmware/claude-opus-4-5",
+        complex="firmware/opus-4-5",
     ),
     Profile(
         name="mix-free",
-        simple="firmware/claude-haiku-4-5",
+        simple="opencode/glm-4.7-free",
         medium="opencode/glm-4.7-free",
         complex="opencode/kimi-k2.5-free",
     ),
@@ -64,7 +70,7 @@ TOGGLE_ORDER = [p.name for p in PROFILES]
 def _strip_quotes(s: str) -> Tuple[str, str]:
     """Return (value_without_quotes, quote_char_or_empty)."""
     s2 = s.strip()
-    if len(s2) >= 2 and s2[0] == s2[-1] and s2[0] in ("\"", "'"):
+    if len(s2) >= 2 and s2[0] == s2[-1] and s2[0] in ('"', "'"):
         return s2[1:-1], s2[0]
     return s2, ""
 
@@ -85,16 +91,20 @@ def _detect_level(model_value: str) -> Optional[str]:
     simple = {
         "anthropic/claude-haiku-4-5",
         "firmware/claude-haiku-4-5",
+        "opencode/glm-4.7-free",
+        "openai/gpt-5.1-codex-mini",
     }
     medium = {
         "anthropic/claude-sonnet-4-5",
         "firmware/claude-sonnet-4-5",
         "opencode/glm-4.7-free",
+        "openai/gpt-5.1-codex",
     }
     complex_ = {
         "anthropic/claude-opus-4-5",
         "firmware/claude-opus-4-5",
         "opencode/kimi-k2.5-free",
+        "openai/gpt-5.2-codex",
     }
 
     if model_value in simple:
@@ -133,7 +143,9 @@ def _update_file_model(path: Path, profile: Profile) -> Tuple[bool, list[str]]:
     if not model_line_idxs:
         return False, warnings
     if len(model_line_idxs) > 1:
-        warnings.append(f"WARN {path}: multiple model keys in frontmatter; updating first")
+        warnings.append(
+            f"WARN {path}: multiple model keys in frontmatter; updating first"
+        )
 
     i = model_line_idxs[0]
     raw = lines[i]
@@ -251,11 +263,17 @@ def main(argv: list[str]) -> int:
         help=f"Profile name to set ({', '.join(TOGGLE_ORDER)}); omit to toggle",
     )
     parser.add_argument("--list", action="store_true", help="List available profiles")
-    parser.add_argument("--status", action="store_true", help="Show current profile and change counts")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would change without writing")
+    parser.add_argument(
+        "--status", action="store_true", help="Show current profile and change counts"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would change without writing"
+    )
     args = parser.parse_args(argv)
 
-    agents_dir = Path(os.environ.get("AGENTS_DIR", str(Path.home() / ".agents"))).expanduser()
+    agents_dir = Path(
+        os.environ.get("AGENTS_DIR", str(Path.home() / ".agents"))
+    ).expanduser()
     if not agents_dir.exists():
         print(f"ERROR: AGENTS_DIR not found: {agents_dir}", file=sys.stderr)
         return 2
@@ -270,11 +288,15 @@ def main(argv: list[str]) -> int:
             )
         return 0
 
-    current = _read_active_profile_name(agents_dir) or _infer_active_profile_name(agents_dir)
+    current = _read_active_profile_name(agents_dir) or _infer_active_profile_name(
+        agents_dir
+    )
 
     if args.profile:
         if args.profile not in PROFILE_BY_NAME:
-            print(f"ERROR: unknown profile '{args.profile}'. Use --list.", file=sys.stderr)
+            print(
+                f"ERROR: unknown profile '{args.profile}'. Use --list.", file=sys.stderr
+            )
             return 2
         target_name = args.profile
     else:

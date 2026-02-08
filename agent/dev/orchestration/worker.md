@@ -2,7 +2,7 @@
 name: worker
 description: Use when the task is straightforward and well-defined (config changes, small features, simple CRUD, or following an existing pattern). Triggers on "implement this", "make this change", "add this field", "update the config", "wire this up", or "follow the pattern". For complex or ambiguous tasks requiring design decisions, use the executor agent instead.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 temperature: 0.2
 permission:
   read: "allow"

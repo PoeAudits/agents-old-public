@@ -11,7 +11,7 @@ permission:
   context7_search: "deny"
   context7_fetch: "deny"
   gh_grep: "deny"
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 ---
 
 You are a community research agent. You find practical, real-world information from the developer community.

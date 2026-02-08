@@ -6,7 +6,7 @@ permission:
   edit: deny
   bash: deny
   websearch: deny
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 ---
 
 You are an expert documentation discovery specialist focused on finding

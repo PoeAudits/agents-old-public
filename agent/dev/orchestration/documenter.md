@@ -1,7 +1,7 @@
 ---
 description: Use when you need to update README.md and AGENTS.md after implementation so docs match the code. Triggers on "update the docs", "refresh README", "update AGENTS.md", "document the changes", "sync docs with code", "docs are out of date", or "add documentation for this feature". Also used by the orchestrator after completing implementation phases to keep documentation synchronized.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 temperature: 0.2
 permission:
   read: allow

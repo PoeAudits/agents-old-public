@@ -10,7 +10,7 @@ permission:
   skill: allow
   bash: deny
   edit: deny
-  write: deny
+  write: allow
   webfetch: deny
   websearch: deny
 ---

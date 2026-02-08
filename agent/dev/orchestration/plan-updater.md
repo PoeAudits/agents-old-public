@@ -1,7 +1,7 @@
 ---
 description: Use when you need small, precise edits to a plan markdown file (status markers, execution status, brief progress notes) without reformatting. Triggers on "update the plan", "mark this done", "mark this complete", "update plan status", "mark phase as done", "update progress", "check off this task", or "set status to complete". For rewriting plan sections or adding new phases, use the executor agent instead.
 mode: subagent
-model: anthropic/claude-haiku-4-5
+model: openai/gpt-5.1-codex-mini
 temperature: 0.1
 permission:
   read: allow

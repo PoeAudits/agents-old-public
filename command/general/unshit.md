@@ -21,7 +21,7 @@ Based on the project context above, propose a review scope:
 
 Present the proposed scope to the user, then use the question tool to gather preferences:
 
-**Question 1 - Review focus:**
+**Question - Review focus:**
 - header: "Focus areas"
 - question: "Which areas should this review focus on?"
 - multiple: true
@@ -32,19 +32,49 @@ Present the proposed scope to the user, then use the question tool to gather pre
   - Dependency bloat (Heavy/unused deps, stdlib replacements)
   - Config/test bloat (Stale config, duplicate test setup, dead tests)
 
-**Question 2 - Depth:**
-- header: "Depth"
-- question: "How thorough should the review be?"
-- options:
-  - Quick scan (Top-level issues only, fast)
-  - Standard (Recommended) (Balanced depth and speed)
-  - Deep audit (Exhaustive, may take longer)
+## Phase 0.5: Present Plan and Confirm
 
-If the user comments on the proposed scope or adjusts it, incorporate their feedback before proceeding.
+After the user selects focus areas, calculate the agent dispatch plan and present it clearly:
+
+**Agent scaling rules:**
+- 1 topic selected → 3 agents (deep dive)
+- 2 topics selected → 2 agents per topic (4 total)
+- 3+ topics selected → 1 agent per topic
+
+**Present the plan like this:**
+
+> Based on your selection of [N topic(s)], I'll dispatch **[X] seeker agents**:
+>
+> **[Topic 1]:**
+> - Agent A: [specific focus]
+> - Agent B: [specific focus]
+> - (Agent C if applicable)
+>
+> **[Topic 2]:** (if selected)
+> - Agent A: [specific focus]
+> - ...
+>
+> Estimated time: [quick/moderate/thorough based on agent count]
+
+**Then ask for confirmation using the question tool:**
+- header: "Dispatch plan"
+- question: "Proceed with this plan, or adjust?"
+- options:
+  - Proceed
+  - Fewer agents (faster, less thorough)
+  - More agents (slower, more thorough)
+  - Change topics
+
+If the user selects an adjustment option, re-calculate and present the updated plan. Loop until they confirm "Proceed".
 
 ## Phase 1: Dispatch Seeker Agents
 
-Use the `task` tool with `subagent_type: seeker` to dispatch parallel code reviews. Only dispatch seekers for the focus areas the user selected.
+Execute the dispatch plan confirmed in Phase 0.5. Use the `task` tool with `subagent_type: seeker` to dispatch all agents in parallel.
+
+**Reference: Agent scaling (already presented to user)**
+- 1 topic → 3 agents (A, B, C)
+- 2 topics → 2 agents each (A, B)
+- 3+ topics → 1 agent each (A only)
 
 **Global seeker directives** (include in every seeker prompt):
 - Respect `.gitignore` -- skip `node_modules`, `dist`, `build`, `__pycache__`, `.git`, `vendor`, and any other generated/vendored directories
@@ -52,20 +82,70 @@ Use the `task` tool with `subagent_type: seeker` to dispatch parallel code revie
 - Use the project context (languages, dependency files) to target searches
 - Return: file path with line numbers/ranges, brief description, and estimated lines affected
 
-### Seeker: Dead/Unused Code
-Find functions, methods, or classes never called. Find variables declared but never accessed, unused imports, commented-out code blocks (not explanatory comments), unreachable code paths, and exports never imported elsewhere.
+---
 
-### Seeker: Redundant Implementations
-Find duplicate logic across files/functions, near-identical code blocks, utility functions duplicated across modules, repeated patterns that could be abstracted, and multiple implementations of the same concept.
+### Topic: Dead/Unused Code
 
-### Seeker: Verbose/Overcomplicated Code
-Find functions with deep nesting (4+ levels), excessive parameters (5+), or excessive length (50+ lines). Find classes with too many responsibilities, complex boolean expressions, premature/overengineered abstractions, and long method chains.
+**Sub-agent A - Structural dead code:**
+Find functions, methods, or classes that are never called anywhere in the codebase. Look for exported symbols never imported by other modules. Check for entire files that are never imported.
 
-### Seeker: Import/Dependency Bloat
-Analyze the project's dependency files. Find heavy dependencies used for trivial tasks, multiple libraries doing the same thing, dependencies replaceable with stdlib, and unused or barely-used heavy packages. Quantify how many call sites use each flagged dependency.
+**Sub-agent B - Declaration-level dead code:**
+Find variables declared but never read. Find unused imports (imported but never referenced). Find unused function parameters. Find unused class properties or instance variables.
 
-### Seeker: Configuration/Test Bloat
-Find configuration files with unused settings, test files with excessive boilerplate or duplicate setup, overly complex build configs, and tests that don't assert anything meaningful.
+**Sub-agent C - Unreachable and commented code:**
+Find unreachable code paths (after return/throw, impossible conditions). Find large commented-out code blocks (not explanatory comments). Find dead branches in conditionals that can never execute.
+
+---
+
+### Topic: Redundant Implementations
+
+**Sub-agent A - Intra-file duplication:**
+Find duplicate logic within the same file. Look for copy-pasted code blocks, repeated patterns in adjacent functions, and logic that could be extracted into a helper.
+
+**Sub-agent B - Cross-file duplication:**
+Find duplicate logic across different files/modules. Look for utility functions reimplemented in multiple places, identical validation logic, and repeated error handling patterns.
+
+**Sub-agent C - Unifiable patterns:**
+Find near-identical implementations that differ only slightly. Look for functions doing the same thing with minor variations that could be unified with parameters, or repeated patterns that suggest a missing abstraction.
+
+---
+
+### Topic: Verbose/Overcomplicated Code
+
+**Sub-agent A - Nesting and conditionals:**
+Find functions with deep nesting (4+ levels). Find complex boolean expressions that are hard to read. Find excessive if/else chains that could be simplified. Find nested ternaries.
+
+**Sub-agent B - Size and parameters:**
+Find functions exceeding 50 lines. Find functions with 5+ parameters. Find classes with too many methods or too many responsibilities (god objects). Find files that are excessively long.
+
+**Sub-agent C - Overengineering:**
+Find premature abstractions (interfaces with single implementations, factories that create one thing). Find long method chains. Find overly generic code solving problems that don't exist. Find unnecessary indirection layers.
+
+---
+
+### Topic: Import/Dependency Bloat
+
+**Sub-agent A - Heavy dependencies for trivial use:**
+Analyze dependencies and find heavy packages used for trivial tasks (e.g., lodash for a single function). Quantify: what functions are actually used from each dependency?
+
+**Sub-agent B - Redundant dependencies:**
+Find multiple libraries doing the same thing (e.g., moment + dayjs, axios + fetch wrapper). Find dependencies that overlap significantly in functionality.
+
+**Sub-agent C - Unused and replaceable:**
+Find dependencies that are imported but barely used (< 3 call sites). Find dependencies easily replaceable with stdlib or built-in language features. Check if dev dependencies are mistakenly in production.
+
+---
+
+### Topic: Configuration/Test Bloat
+
+**Sub-agent A - Stale configuration:**
+Find configuration files with unused or outdated settings. Find environment variables defined but never read. Find build/CI config for features that no longer exist.
+
+**Sub-agent B - Test setup duplication:**
+Find duplicate test setup/teardown across test files. Find repeated mock definitions. Find test utilities reimplemented instead of shared. Find excessive beforeEach/afterEach boilerplate.
+
+**Sub-agent C - Weak tests:**
+Find tests that don't assert anything meaningful. Find tests with only existence checks but no behavior verification. Find tests that are commented out or skipped indefinitely. Find tests that always pass regardless of implementation.
 
 ## Phase 2: Compile Findings
 
@@ -94,17 +174,5 @@ Craft a cleanup plan based on the compiled findings:
    - Expected lines removed or simplified
 4. Organize batches into phases: quick wins first, then medium effort, then deep refactors
 
-## Phase 4: Save Report
 
-Determine the project name from the project context above.
-
-Save the full report (findings + plan) to:
-`~/thoughts/projects/{project}/reviews/YYYY-MM-DD_unshit.md`
-
-Use today's date. The report should include:
-- YAML frontmatter with `project`, `date`, `scope`, and `summary`
-- Full findings by category with the impact/effort data
-- The prioritized improvement plan
-- A "quick wins" section listing items fixable in under 5 minutes each
-
-Present a summary to the user with the report file path and the top 5 highest-impact findings.
+Present a summary to the user with the report file path and highest-impact findings.

@@ -1,7 +1,7 @@
 ---
 description: Use when you need to understand how a component works by reading code and tracing data flow (with file:line references). Triggers on "how does this work", "trace the flow", "explain this code", "walk me through", "how is this implemented", or "what does this function do". For finding where something lives without analyzing it, use codebase-locator instead.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 temperature: 0.2
 permission:
   read: allow

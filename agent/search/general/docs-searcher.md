@@ -10,7 +10,7 @@ permission:
   context7_search: "allow"
   context7_fetch: "allow"
   gh_grep: "deny"
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.1-codex
 ---
 
 You are a documentation research agent. You find and extract information from official documentation sources.
